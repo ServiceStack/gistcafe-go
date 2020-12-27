@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"reflect"
+	"runtime"
 	"strings"
 
 	"github.com/olekukonko/tablewriter"
@@ -17,23 +19,25 @@ func Vars(objs map[string]interface{}) {
 		return
 	}
 
-	data, jsonErr := json.Marshal(objs)
-	if jsonErr != nil {
-		return
+	if runtime.GOOS == "windows" {
+		inspectVarsPath = strings.ReplaceAll(inspectVarsPath, "/", "\\")
+	} else {
+		inspectVarsPath = strings.ReplaceAll(inspectVarsPath, "\\", "/")
 	}
 
-	if _, err := os.Stat(inspectVarsPath); os.IsNotExist(err) {
-		os.Mkdir(inspectVarsPath, 0755)
+	dir := filepath.Dir(inspectVarsPath)
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0755)
 	}
 
-	file, fileErr := os.OpenFile(inspectVarsPath, os.O_CREATE|os.O_WRONLY, 0644)
+	file, fileErr := os.OpenFile(inspectVarsPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if fileErr != nil {
 		return
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
-	encoder.Encode(data)
+	encoder.Encode(objs)
 }
 
 func Dump(obj interface{}) string {
