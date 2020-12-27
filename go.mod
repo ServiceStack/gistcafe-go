@@ -2,4 +2,4 @@ module github.com/servicestack/gistcafe-go
 
 go 1.13
 
-require github.com/davecgh/go-spew v1.1.1
+require github.com/olekukonko/tablewriter v0.0.4
